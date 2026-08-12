@@ -1,0 +1,7 @@
+{# Minimal stand-in for the host's appHeading component, used only in tests. #}
+{% macro appHeading(params) %}
+  <h1 data-testid="app-heading-title">{{ params.text }}</h1>
+  {% if params.caption %}
+    <span data-testid="app-heading-caption">{{ params.caption }}</span>
+  {% endif %}
+{% endmacro %}

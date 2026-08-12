@@ -1,0 +1,14 @@
+{# Minimal stand-in for the host's layouts/page.njk, used only in tests. A real
+   host provides its own (GOV.UK) layout; the plugin views extend whatever the
+   host supplies. Mirrors the host contract: imports appHeading, exposes a
+   `content` block. #}
+{% from "heading/macro.njk" import appHeading %}
+<!doctype html>
+<html lang="{{ lang }}">
+  <head>
+    <title>{{ pageTitle }}</title>
+  </head>
+  <body>
+    {% block content %}{% endblock %}
+  </body>
+</html>
