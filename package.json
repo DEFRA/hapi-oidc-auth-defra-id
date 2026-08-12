@@ -1,0 +1,53 @@
+{
+  "name": "@defra/hapi-oidc-auth-defra-id",
+  "version": "0.0.0",
+  "description": "Reusable Hapi plugin for applicant sign-in via Defra Customer Identity (OIDC auth-code + PKCE).",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src/**/*.js",
+    "src/**/*.njk",
+    "!src/**/*.test.js"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "license": "OGL-UK-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DEFRA/hapi-oidc-auth-defra-id.git"
+  },
+  "scripts": {
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,cjs,md,json}\"",
+    "format:check": "prettier --check \"**/*.{js,cjs,md,json}\""
+  },
+  "peerDependencies": {
+    "@hapi/hapi": ">=21",
+    "@hapi/vision": ">=7",
+    "@hapi/yar": ">=11",
+    "govuk-frontend": ">=6",
+    "nunjucks": ">=3"
+  },
+  "devDependencies": {
+    "@hapi/hapi": "21.4.9",
+    "@hapi/vision": "7.0.3",
+    "@hapi/yar": "11.0.3",
+    "@vitest/coverage-v8": "4.1.10",
+    "eslint": "9.39.2",
+    "govuk-frontend": "6.3.0",
+    "neostandard": "0.13.0",
+    "nunjucks": "3.2.4",
+    "prettier": "3.9.4",
+    "vitest": "4.1.10"
+  }
+}
