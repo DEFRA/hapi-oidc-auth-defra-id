@@ -60,10 +60,17 @@ Defra Customer Identity delivers the applicant's **organisations** via the
 The client id is also sent as an additional scope
 (`openid offline_access <clientId>`), as Defra Identity requires.
 
-Access via `requireAuthorised` is granted only when the token's `roles` claim
-carries one of the configured `roleValues`; `roleValues` also accepts a single
-string. If you configure none, `requireAuthorised` denies everyone (fail closed)
-— use `requireAuth` if you only need "signed in".
+Defra Customer Identity delivers service roles in the `roles` claim as
+`relationshipId:roleName:status` entries. The plugin extracts the **role name**
+only for the applicant's **current relationship** and only for an **approved
+enrolment (status `3`)**, so `session.roles` holds the plain role names for the
+organisation the applicant is acting for (a role from another org, or a
+pending/rejected enrolment, never grants access).
+
+Access via `requireAuthorised` is granted only when one of those role names
+matches a configured `roleValue`; `roleValues` also accepts a single string. If
+you configure none, `requireAuthorised` denies everyone (fail closed) — use
+`requireAuth` if you only need "signed in".
 
 Non-standard claim names can be remapped without code changes via
 `defraId.claims` (defaults: `sub`, `email`, `firstName`, `lastName`,

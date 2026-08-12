@@ -158,7 +158,7 @@ describe('#mapDefraIdClaimsToProfile', () => {
       lastName: 'Grower',
       currentRelationshipId: 'rel-1',
       relationships: ['rel-1:org-1:Org One:::', 'rel-2:org-2:Org Two:::'],
-      roles: 'applicant',
+      roles: 'rel-1:applicant:3',
       sessionId: 's1'
     })
 
@@ -171,13 +171,26 @@ describe('#mapDefraIdClaimsToProfile', () => {
     expect(profile.claims.sessionId).toBe('s1')
   })
 
-  test('carries whatever role values the token contains (role-agnostic)', () => {
-    // The plugin does not judge the roles here — the guards decide access.
+  test('parses the "relationshipId:roleName:status" roles claim — keeps only approved (status 3) roles for the current relationship', () => {
     const profile = mapDefraIdClaimsToProfile({
       sub: 'p1',
-      roles: ['applicant', 'reviewer']
+      currentRelationshipId: 'rel-1',
+      roles: [
+        'rel-1:Certifier:3', // current relationship, approved -> kept
+        'rel-1:Applicant:1', // current relationship, not approved -> dropped
+        'rel-2:Reviewer:3' // different relationship -> dropped
+      ]
     })
-    expect(profile.roles).toEqual(['applicant', 'reviewer'])
+    expect(profile.roles).toEqual(['Certifier'])
+  })
+
+  test('returns no roles when none match the current relationship (fails closed)', () => {
+    const profile = mapDefraIdClaimsToProfile({
+      sub: 'p1',
+      currentRelationshipId: 'rel-9',
+      roles: ['rel-1:Certifier:3']
+    })
+    expect(profile.roles).toEqual([])
   })
 
   test('has an empty roles array when the token carries no roles claim', () => {

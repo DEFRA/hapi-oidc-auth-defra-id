@@ -46,7 +46,7 @@
           {% endif %}
           {{ govukButton({
             text: t.signInButton,
-            href: "/auth/defra-id/start" + ("?returnTo=" + returnTo if returnTo else ""),
+            href: "/auth/defra-id/start" + ("?returnTo=" + (returnTo | urlencode) if returnTo else ""),
             isStartButton: true,
             attributes: { "data-testid": "defra-id-start" }
           }) }}

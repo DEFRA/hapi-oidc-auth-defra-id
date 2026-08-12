@@ -209,7 +209,10 @@ function stringToOrganisation(value) {
 }
 
 function toOrganisation(entry) {
-  return entry && typeof entry === 'object'
+  if (entry === null || entry === undefined) {
+    return null
+  }
+  return typeof entry === 'object'
     ? objectToOrganisation(entry)
     : stringToOrganisation(entry)
 }
@@ -221,7 +224,28 @@ function readOrganisations(relationships) {
 
   return relationships
     .map(toOrganisation)
-    .filter((org) => org.relationshipId || org.organisationId)
+    .filter((org) => org && (org.relationshipId || org.organisationId))
+}
+
+// Defra Identity delivers service roles in the `roles` claim as an array of
+// "relationshipId:roleName:status" strings (same colon format as relationships).
+// A role only grants access when its enrolment status is "Complete/approved"
+// (status 3) AND it belongs to the relationship the applicant is currently
+// acting for — so authorisation reflects the selected organisation and never
+// leaks a role from another org or an unapproved/pending enrolment.
+const APPROVED_ENROLMENT_STATUS = '3'
+
+function parseRoles(rolesClaim, currentRelationshipId) {
+  return toStringArray(rolesClaim)
+    .map((entry) => String(entry).split(':'))
+    .filter(
+      (parts) =>
+        parts.length >= 3 &&
+        parts[0] === currentRelationshipId &&
+        parts[2] === APPROVED_ENROLMENT_STATUS
+    )
+    .map((parts) => parts[1])
+    .filter(Boolean)
 }
 
 function readName(claims, claimMap) {
@@ -263,10 +287,10 @@ export function mapDefraIdClaimsToProfile(claims) {
     name,
     organisationId: currentRelationshipId,
     organisations: readOrganisations(claims[claimMap.relationships]),
-    // The role values the token carries. The plugin is role-agnostic:
-    // authorisation is decided by the guards matching these against the values a
-    // consuming app configures/guards on.
-    roles: toStringArray(claims[claimMap.roles]),
+    // Approved service-role names for the current relationship (parsed from the
+    // "relationshipId:roleName:status" claim). The plugin stays role-agnostic:
+    // the guards match these names against the values a consuming app guards on.
+    roles: parseRoles(claims[claimMap.roles], currentRelationshipId),
     // Note: the full verified claim set is carried through as `claims`, so any
     // session/back-channel claim (e.g. sessionId) remains available there — we
     // don't lift it to a top-level field that applyProfile would just drop.
