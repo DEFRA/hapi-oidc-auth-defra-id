@@ -32,6 +32,19 @@ const DEFAULT_DEFRA_ID_CLAIMS = {
   roles: 'roles'
 }
 
+// Non-secret Defra Identity defaults, applied when a consumer omits a field.
+const DEFRA_ID_DEFAULTS = {
+  mode: 'mock',
+  wellKnownUrl: '',
+  clientId: '',
+  clientSecret: '',
+  serviceId: '',
+  policy: '',
+  publicBaseUrl: '',
+  redirectPath: '/auth/defra-id/callback',
+  signOutRedirectUrl: '/'
+}
+
 let resolved = null
 
 // Accept an array, a single string, or nothing (→ default) for roleValues.
@@ -47,17 +60,10 @@ function normaliseRoleValues(value) {
 
 function resolveDefraId(defraId = {}) {
   return {
-    mode: defraId.mode ?? 'mock',
-    wellKnownUrl: defraId.wellKnownUrl ?? '',
-    clientId: defraId.clientId ?? '',
-    clientSecret: defraId.clientSecret ?? '',
-    serviceId: defraId.serviceId ?? '',
-    policy: defraId.policy ?? '',
-    publicBaseUrl: defraId.publicBaseUrl ?? '',
-    redirectPath: defraId.redirectPath ?? '/auth/defra-id/callback',
-    signOutRedirectUrl: defraId.signOutRedirectUrl ?? '/',
+    ...DEFRA_ID_DEFAULTS,
+    ...defraId,
     roleValues: normaliseRoleValues(defraId.roleValues),
-    claims: { ...DEFAULT_DEFRA_ID_CLAIMS, ...(defraId.claims ?? {}) }
+    claims: { ...DEFAULT_DEFRA_ID_CLAIMS, ...defraId.claims }
   }
 }
 

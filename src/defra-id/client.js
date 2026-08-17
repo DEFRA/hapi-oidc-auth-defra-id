@@ -235,12 +235,15 @@ function readOrganisations(relationships) {
 // leaks a role from another org or an unapproved/pending enrolment.
 const APPROVED_ENROLMENT_STATUS = '3'
 
+// A roles entry is "relationshipId:roleName:status" — three colon-separated parts.
+const ROLE_CLAIM_PARTS = 3
+
 function parseRoles(rolesClaim, currentRelationshipId) {
   return toStringArray(rolesClaim)
     .map((entry) => String(entry).split(':'))
     .filter(
       (parts) =>
-        parts.length >= 3 &&
+        parts.length >= ROLE_CLAIM_PARTS &&
         parts[0] === currentRelationshipId &&
         parts[2] === APPROVED_ENROLMENT_STATUS
     )
