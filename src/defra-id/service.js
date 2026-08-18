@@ -19,6 +19,7 @@ import {
   clearAuthSession,
   createAuthError,
   getAuthSession,
+  isSafeLocalPath,
   resolveBaseUrl,
   setAuthSession
 } from '../session.js'
@@ -34,8 +35,13 @@ export function getDefraIdSummary(request) {
 export async function startDefraIdSignIn(request, options = {}) {
   const summary = getDefraIdSummary(request)
   const session = getAuthSession(request)
+  // Validate the requested returnTo before it enters the session — an unsafe
+  // (off-site) value is dropped here rather than only at redirect time.
+  const requestedReturnTo = isSafeLocalPath(options.returnTo)
+    ? options.returnTo
+    : ''
   session.returnTo =
-    options.returnTo || session.returnTo || getConfig().redirects.postLogin
+    requestedReturnTo || session.returnTo || getConfig().redirects.postLogin
 
   if (!summary.isLive) {
     session.pendingState = `mock-defra-id-${Date.now()}`

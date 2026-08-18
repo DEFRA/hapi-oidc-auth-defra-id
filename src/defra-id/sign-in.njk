@@ -26,9 +26,12 @@
           {{ shared.alreadySignedInPrefix }} {{ session.name }}.
         </p>
         <p class="govuk-body">
-          <a class="govuk-link" href="/auth/account">{{ shared.viewAccount }}</a>
-          {{ shared.or }} <a class="govuk-link" href="/auth/sign-out">{{ shared.signOut }}</a>.
+          <a class="govuk-link" href="/auth/account">{{ shared.viewAccount }}</a>.
         </p>
+        {# Sign-out is POST-only (CSRF); submit it via a form, not a link. #}
+        <form method="post" action="/auth/sign-out">
+          {{ govukButton({ text: shared.signOut, classes: "govuk-button--secondary" }) }}
+        </form>
       {% else %}
         <p class="govuk-body">{{ t.intro }}</p>
 

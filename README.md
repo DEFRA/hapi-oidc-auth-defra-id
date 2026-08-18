@@ -145,7 +145,18 @@ server.route({
 ```
 
 Wire `buildAccount(request)` into your Nunjucks view context (e.g. as `account`)
-to show the signed-in name + sign-out link in your header.
+to show the signed-in name + sign-out control in your header.
+
+**Sign-out is `POST /auth/sign-out` (not GET)** — a GET would let any cross-site
+link or image silently log the user out (the live session cookie is
+`SameSite=None`). Render the sign-out control as a form submit, not a link, using
+`account.signOutUrl` as the form action:
+
+```njk
+<form method="post" action="{{ account.signOutUrl }}">
+  {{ govukButton({ text: "Sign out", classes: "govuk-button--secondary" }) }}
+</form>
+```
 
 ## Views (host wiring)
 

@@ -1,7 +1,11 @@
 // Shared auth routes.
 //
-//   GET /auth/sign-out   sign out of Defra Identity and clear the local session
-//   GET /auth/account    authenticated "who am I" page (session diagnostic / landing)
+//   POST /auth/sign-out  sign out of Defra Identity and clear the local session
+//   GET  /auth/account   authenticated "who am I" page (session diagnostic / landing)
+//
+// Sign-out is POST-only (submitted via a form) so a cross-site GET (link/image)
+// cannot silently log a user out — the session cookie is SameSite=None in live
+// mode, so it would otherwise ride along on any cross-site request (CSRF).
 
 import { getConfig } from './config.js'
 import { LANG_EN } from './content.js'
@@ -39,7 +43,7 @@ export const sharedAuthRoutes = {
     name: 'auth-shared',
     register(server) {
       server.route([
-        { method: 'GET', path: PAGE_PATHS.SIGN_OUT, ...signOut },
+        { method: 'POST', path: PAGE_PATHS.SIGN_OUT, ...signOut },
         { method: 'GET', path: PAGE_PATHS.ACCOUNT, ...account }
       ])
     }

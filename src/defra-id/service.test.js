@@ -172,6 +172,28 @@ describe('#completeDefraIdCallback (mock)', () => {
   })
 })
 
+describe('#startDefraIdSignIn returnTo sanitisation', () => {
+  test('drops an off-site returnTo instead of storing it in the session', async () => {
+    const request = fakeRequest()
+    await startDefraIdSignIn(request, {
+      returnTo: 'https://evil.example/phish'
+    })
+    expect(getAuthSession(request).returnTo).toBe('/register/type')
+  })
+
+  test('drops a protocol-relative returnTo', async () => {
+    const request = fakeRequest()
+    await startDefraIdSignIn(request, { returnTo: '//evil.example' })
+    expect(getAuthSession(request).returnTo).toBe('/register/type')
+  })
+
+  test('keeps a safe local returnTo', async () => {
+    const request = fakeRequest()
+    await startDefraIdSignIn(request, { returnTo: '/register/business-name' })
+    expect(getAuthSession(request).returnTo).toBe('/register/business-name')
+  })
+})
+
 describe('#signOutDefraId (live)', () => {
   test('returns the end-session URL and clears the session', async () => {
     setLiveConfig()

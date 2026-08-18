@@ -10,11 +10,18 @@
 // Secrets). The plugin holds no secrets.
 
 import path from 'node:path'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { setConfig } from './config.js'
 import { defraIdRoutes } from './defra-id/routes.js'
 import { sharedAuthRoutes } from './shared-routes.js'
+
+// Single source of truth for the plugin version — read from package.json rather
+// than duplicating the string here (the two can drift otherwise).
+const { version: PLUGIN_VERSION } = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+)
 
 // Public surface for host apps: route guards (to protect their own pages), the
 // header account context, session read helpers, and the canonical auth paths.
@@ -71,7 +78,7 @@ function withoutSecrets(resolved) {
 export const hapiOidcAuth = {
   plugin: {
     name: PLUGIN_NAME,
-    version: '0.1.0',
+    version: PLUGIN_VERSION,
     async register(server, options) {
       assertOptions(options)
 

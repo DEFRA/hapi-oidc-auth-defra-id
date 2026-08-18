@@ -106,9 +106,9 @@ export function resolveBaseUrl(request, configuredBaseUrl) {
   return host ? `${protocol}://${host}` : ''
 }
 
-// Resolve the post-login destination. Honour a safe local returnTo (deep-link back
-// to the attempted page) and block open redirects (local paths only).
-function isSafeLocalPath(value) {
+// Whether a returnTo is a safe local path (blocks open redirects). Exported so
+// callers can validate at *storage* time too, not only at redirect time.
+export function isSafeLocalPath(value) {
   return (
     typeof value === 'string' &&
     value.startsWith('/') &&
