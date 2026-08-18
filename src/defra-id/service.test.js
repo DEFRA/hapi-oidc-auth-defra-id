@@ -173,24 +173,24 @@ describe('#completeDefraIdCallback (mock)', () => {
 })
 
 describe('#startDefraIdSignIn returnTo sanitisation', () => {
-  test('drops an off-site returnTo instead of storing it in the session', async () => {
+  // An off-site or protocol-relative returnTo is dropped (falls back to the
+  // configured postLogin '/register/type'); a safe local path is kept.
+  test.each([
+    [
+      'drops an off-site returnTo',
+      'https://evil.example/phish',
+      '/register/type'
+    ],
+    ['drops a protocol-relative returnTo', '//evil.example', '/register/type'],
+    [
+      'keeps a safe local returnTo',
+      '/register/business-name',
+      '/register/business-name'
+    ]
+  ])('%s', async (_desc, returnTo, expected) => {
     const request = fakeRequest()
-    await startDefraIdSignIn(request, {
-      returnTo: 'https://evil.example/phish'
-    })
-    expect(getAuthSession(request).returnTo).toBe('/register/type')
-  })
-
-  test('drops a protocol-relative returnTo', async () => {
-    const request = fakeRequest()
-    await startDefraIdSignIn(request, { returnTo: '//evil.example' })
-    expect(getAuthSession(request).returnTo).toBe('/register/type')
-  })
-
-  test('keeps a safe local returnTo', async () => {
-    const request = fakeRequest()
-    await startDefraIdSignIn(request, { returnTo: '/register/business-name' })
-    expect(getAuthSession(request).returnTo).toBe('/register/business-name')
+    await startDefraIdSignIn(request, { returnTo })
+    expect(getAuthSession(request).returnTo).toBe(expected)
   })
 })
 
