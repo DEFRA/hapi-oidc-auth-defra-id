@@ -1,0 +1,73 @@
+name: Check Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+jobs:
+  pr-validator:
+    name: Run Pull Request Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Trusted publishing publishes on merge to main, so every PR must bump the
+      # package version — fail the check if it hasn't been incremented.
+      - name: Get package version
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Get base branch version
+        id: base-version
+        run: |
+          git fetch origin main --depth=1
+          echo "version=$(git show origin/main:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version")" >> "$GITHUB_OUTPUT"
+
+      - name: Check version incremented
+        run: |
+          PR_VERSION="${{ steps.package-version.outputs.version }}"
+          BASE_VERSION="${{ steps.base-version.outputs.version }}"
+          node -e "
+            const [a, b] = ['$PR_VERSION', '$BASE_VERSION'].map(v => v.split('.').map(Number));
+            const isGreater = a[0] > b[0] || (a[0] === b[0] && a[1] > b[1]) || (a[0] === b[0] && a[1] === b[1] && a[2] > b[2]);
+            if (!isGreater) {
+              console.error('::error::Version in package.json ($PR_VERSION) must be greater than the base branch version ($BASE_VERSION)');
+              process.exit(1);
+            }
+          "
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test with coverage
+        run: npm test
+
+      - name: Security audit
+        run: npm audit --audit-level=high
+
+      - name: SonarCloud Scan
+        if: github.actor != 'dependabot[bot]'
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.PESTICIDES_SONAR_TOKEN }}

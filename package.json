@@ -1,6 +1,6 @@
 {
   "name": "@defra/hapi-oidc-auth-defra-id",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Reusable Hapi plugin for applicant sign-in via Defra Customer Identity (OIDC auth-code + PKCE).",
   "type": "module",
   "main": "src/index.js",
